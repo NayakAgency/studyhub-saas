@@ -221,7 +221,7 @@ export const loginStudent = async ({ phone, password, tenantSlug, identifier }) 
 // Refresh token rotation
 // ============================================================
 export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => {
-  // Verify refresh token
+  // Verify refresh token JWT signature first (fast, no DB)
   let payload;
   try {
     const verified = await jose.jwtVerify(refreshToken, secret);
@@ -230,13 +230,10 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
     throw new Error('Invalid or expired refresh token');
   }
 
-  // Hash the token for lookup
-  const tokenHash = await bcrypt.hash(refreshToken, 1); // Fast hash for lookup
-
-  // Check if token exists and is valid
+  // Check if a valid non-revoked token exists for this user
   const { data: storedToken } = await supabaseAdmin
     .from('refresh_tokens')
-    .select('*')
+    .select('id')
     .eq('user_id', payload.sub)
     .eq('is_revoked', false)
     .gt('expires_at', new Date().toISOString())
@@ -301,25 +298,25 @@ export const changePassword = async (userId, newPassword) => {
 };
 
 // ============================================================
-// Helper: Store refresh token
-// Supports both 'token' column (old schema) and 'token_hash' column (new schema)
+// Helper: Store refresh token (fast — SHA256 instead of bcrypt)
 // ============================================================
 const storeRefreshToken = async (userId, token, userAgent, ipAddress) => {
-  const tokenHash = await bcrypt.hash(token, 10);
+  // Use SHA256 for storage — bcrypt at cost 10 is too slow for serverless
+  const { createHash } = await import('node:crypto');
+  const tokenHash = createHash('sha256').update(token).digest('hex');
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Try with token_hash first (new schema), fallback to token (old schema)
   const { error } = await supabaseAdmin.from('refresh_tokens').insert({
     user_id: userId,
     token_hash: tokenHash,
-    token: tokenHash,      // store hash in both columns for compat
+    token: tokenHash,
     expires_at: expiresAt,
     user_agent: userAgent || null,
     ip_address: ipAddress || null,
   });
 
   if (error) {
-    // Fallback: old schema without token_hash / user_agent columns
+    // Fallback: old schema
     await supabaseAdmin.from('refresh_tokens').insert({
       user_id: userId,
       token: tokenHash,

@@ -133,23 +133,22 @@ router.post('/', validateBody(createStudentSchema), async (req, res, next) => {
 
     if (existing) return res.status(409).json({ error: 'Phone number already registered' });
 
-    // Create auth user with temp email
+    // Create auth user with temp email (fire-and-forget — don't block response)
     const authEmail = email || `${phone.replace(/\D/g, '')}@${tenantId}.internal`;
-    const tempPassword = Math.random().toString(36).slice(-8) + 'A1';
+    const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
 
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    // Create auth user asynchronously — don't await, don't block student creation
+    const authUserPromise = supabaseAdmin.auth.admin.createUser({
       email: authEmail,
       password: tempPassword,
       email_confirm: true,
-    });
-
-    if (authError) return res.status(400).json({ error: authError.message });
+    }).catch(err => console.error('[student create] auth user error:', err.message));
 
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
         tenant_id: tenantId,
-        user_id: authData.user.id,
+        user_id: null, // will be patched async after auth user creation
         full_name: fullName,
         phone,
         email: email || null,
@@ -167,10 +166,17 @@ router.post('/', validateBody(createStudentSchema), async (req, res, next) => {
       .select()
       .single();
 
-    if (studentError) {
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      throw new Error(studentError.message);
-    }
+    if (studentError) throw new Error(studentError.message);
+
+    // Patch user_id once auth user is ready (background)
+    authUserPromise.then(async (authResult) => {
+      if (authResult?.data?.user?.id) {
+        await supabaseAdmin.from('students')
+          .update({ user_id: authResult.data.user.id })
+          .eq('id', student.id)
+          .catch(e => console.error('[student create] patch user_id error:', e.message));
+      }
+    });
 
     // Create membership if plan provided
     if (planId && assignedSeatId) {

@@ -165,7 +165,7 @@ ok('Create seat', newSeat.ok, `id=${newSeat.data.id} num=${newSeat.data.seat_num
 let SEAT_ID = newSeat.data.id || (Array.isArray(seatList.data)?seatList.data.find(s=>s.status==='available')?.id:null);
 // POST /admin/seats/generate → { created:N, seats:[...] }
 const bulkR = await POST('/admin/seats/generate', {
-  sectionId:SEC_ID, prefix:'GEN', startNumber:800, count:3, seatType:'standard',
+  sectionId:SEC_ID, prefix:`G${ts}`, startNumber:1, count:3, seatType:'standard',
 }, HAT);
 ok('Bulk generate seats', bulkR.ok, `created=${bulkR.data.created}`);
 
@@ -295,8 +295,8 @@ ok('List FAQs', faqList.ok, `count=${Array.isArray(faqList.data)?faqList.data.le
 S('17. HALL ADMIN — WAITING LIST');
 // POST /admin/waiting-list → returns entry object directly (has .id, .full_name)
 const wlAdd = await POST('/admin/waiting-list', {
-  fullName:'Sneha Patel', phone:`9800${Math.floor(Math.random()*100000)}`,
-  email:'sneha@test.com', notes:'Wants AC section',
+  fullName:'Sneha Patel', phone:`98${Math.floor(Math.random()*100000000).toString().padStart(8,'0')}`,
+  email:`sneha${ts}@test.com`, notes:'Wants AC section',
 }, HAT);
 ok('Add to waiting list', wlAdd.ok, `id=${wlAdd.data.id} name=${wlAdd.data.full_name}`);
 // GET /admin/waiting-list → returns array directly
