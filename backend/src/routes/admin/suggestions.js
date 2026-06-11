@@ -27,7 +27,7 @@ router.get('/', validateQuery(z.object({
     let query = supabaseAdmin
       .from('suggestions')
       .select(`
-        id, subject, description, content, status, is_anonymous, created_at,
+        id, subject, description, status, is_anonymous, created_at,
         student:students(id, full_name, student_code)
       `, { count: 'exact' })
       .eq('tenant_id', req.user.tenant_id)
@@ -42,9 +42,8 @@ router.get('/', validateQuery(z.object({
     // Mask anonymous suggestions + normalize content fields
     const masked = (data || []).map((s) => ({
       ...s,
-      // Support both old (content) and new (subject/description) schema
-      subject: s.subject || s.content || '',
-      description: s.description || s.content || '',
+      subject: s.subject || '',
+      description: s.description || '',
       student: s.is_anonymous ? null : s.student,
     }));
 
