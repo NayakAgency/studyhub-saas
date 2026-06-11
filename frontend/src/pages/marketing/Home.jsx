@@ -594,10 +594,17 @@ export default function MarketingHome() {
           </nav>
 
           <div className="flex items-center gap-2 ml-auto">
-            <button onClick={() => scrollTo('for-students')} className="hidden sm:block px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors">
-              For Students
-            </button>
-            <button onClick={() => scrollTo('get-started')} className="hidden sm:block px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors">
+            <Link to="/login?role=student" className="hidden sm:block">
+              <button className="px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors">
+                Student Login
+              </button>
+            </Link>
+            <Link to="/login">
+              <button className="px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors">
+                Admin Login
+              </button>
+            </Link>
+            <button onClick={() => scrollTo('get-started')} className="hidden md:block px-3 py-1.5 text-sm font-medium text-primary-600 border border-primary-200 hover:bg-primary-50 rounded-lg transition-colors">
               List Your Hall →
             </button>
           </div>
@@ -626,9 +633,14 @@ export default function MarketingHome() {
                 >
                   Browse Study Halls
                 </button>
+                <Link to="/login?role=student">
+                  <button className="w-full sm:w-auto px-6 py-3 bg-white text-primary-700 font-semibold rounded-xl border border-primary-200 hover:bg-primary-50 transition-colors">
+                    Student Login
+                  </button>
+                </Link>
                 <button
                   onClick={() => scrollTo('get-started')}
-                  className="px-6 py-3 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-3 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors hidden sm:block"
                 >
                   List My Study Hall →
                 </button>

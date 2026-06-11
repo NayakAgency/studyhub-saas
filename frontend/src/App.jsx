@@ -70,6 +70,9 @@ const AdminSeatChanges      = lazy(() => import('./pages/admin/AdminSeatChanges.
 
 // ── Super Admin Portal ────────────────────────────────────────
 const SuperAdminLogin        = lazy(() => import('./pages/super-admin/SuperAdminLogin.jsx'));
+
+// ── Unified Login ─────────────────────────────────────────────
+const UnifiedLogin = lazy(() => import('./pages/auth/UnifiedLogin.jsx'));
 const SuperAdminLayout       = lazy(() => import('./pages/super-admin/SuperAdminLayout.jsx'));
 const SuperAdminDashboard    = lazy(() => import('./pages/super-admin/SuperAdminDashboard.jsx'));
 const SuperAdminTenants      = lazy(() => import('./pages/super-admin/SuperAdminTenants.jsx'));
@@ -104,6 +107,7 @@ export default function App() {
 
         {/* ── Marketing ── */}
         <Route path="/" element={<MarketingHome />} />
+        <Route path="/login" element={<UnifiedLogin />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms"   element={<TermsOfService />} />
 
