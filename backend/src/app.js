@@ -10,8 +10,15 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import { auditMiddleware } from './middleware/audit.js';
-import { wsManager } from './services/websocket.service.js';
-import { cacheService } from './services/cache.service.js';
+
+// wsManager and cacheService are lazy-imported only in server.js (not in serverless)
+// Provide no-op stubs so health endpoint still works on Vercel
+const wsManager = {
+  getStats: () => ({ mode: 'serverless', connections: 0, note: 'WebSocket not available in serverless mode' }),
+};
+const cacheService = {
+  getStats: () => ({ connected: false, mode: 'serverless' }),
+};
 
 // ── Auth ─────────────────────────────────────────────────────
 import authRoutes from './routes/auth.js';
@@ -126,36 +133,17 @@ app.use(env.isDev ? morgan('dev') : morgan('combined'));
 app.use(auditMiddleware);
 
 // ── Health ────────────────────────────────────────────────────
-app.get('/health', async (_req, res) => {
-  try {
-    const [jobsModule, wsStats, cacheStats] = await Promise.all([
-      import('./jobs/index.js'),
-      Promise.resolve(wsManager.getStats()),
-      Promise.resolve(cacheService.getStats()),
-    ]);
-    
-    res.json({ 
-      status: 'ok', 
-      version: '1.0.0', 
-      timestamp: new Date().toISOString(),
-      services: {
-        jobs: jobsModule.getJobsHealth(),
-        websocket: wsStats,
-        cache: cacheStats,
-      },
-    });
-  } catch (error) {
-    res.json({ 
-      status: 'ok', 
-      version: '1.0.0', 
-      timestamp: new Date().toISOString(),
-      services: { 
-        jobs: { error: 'Jobs info unavailable' },
-        websocket: { error: 'WebSocket info unavailable' },
-        cache: { error: 'Cache info unavailable' },
-      },
-    });
-  }
+app.get('/health', (_req, res) => {
+  res.json({ 
+    status: 'ok', 
+    version: '1.0.0', 
+    timestamp: new Date().toISOString(),
+    environment: env.nodeEnv,
+    services: {
+      websocket: wsManager.getStats(),
+      cache: cacheService.getStats(),
+    },
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

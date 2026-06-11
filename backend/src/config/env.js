@@ -19,8 +19,13 @@ const optional = [
 const missing = required.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
-  console.error('❌ Missing required environment variables:');
-  missing.forEach((key) => console.error(`   - ${key}`));
+  const msg = `Missing required environment variables: ${missing.join(', ')}`;
+  // In serverless (Vercel), process.exit crashes the function handler.
+  // Throw instead so the request gets a 500 with a useful message.
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    throw new Error(msg);
+  }
+  console.error('❌', msg);
   process.exit(1);
 }
 
