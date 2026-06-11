@@ -168,14 +168,16 @@ app.post('/debug/student-login', async (req, res) => {
     if (!tenant) return res.json({ steps, error: 'Tenant not found' });
     
     // Find student
-    const { data: student, error: stuErr } = await sba.from('students').select('id,user_id,phone,full_name,status,email,auth_email').eq('tenant_id', tenant.id).eq('phone', phone).single();
+    const { data: student, error: stuErr } = await sba.from('students').select('id,user_id,phone,full_name,status,email').eq('tenant_id', tenant.id).eq('phone', phone).single();
     steps.push(`student: ${student?.id ? student.full_name : 'not found'} error: ${stuErr?.message || 'none'}`);
     
     if (!student) return res.json({ steps, error: 'Student not found' });
     
-    // Derive auth email
-    let authEmail = student.auth_email || student.email;
-    if (!authEmail) authEmail = `${phone.replace(/\D/g, '')}@${tenantSlug}.studyhub.local`;
+    // Derive auth email — same logic as auth.service.js
+    let authEmail = student.email;
+    if (!authEmail || !authEmail.includes('.studyhub.local')) {
+      authEmail = `${phone.replace(/\D/g, '')}@${tenantSlug}.studyhub.local`;
+    }
     steps.push(`authEmail: ${authEmail}`);
     
     // Sign in

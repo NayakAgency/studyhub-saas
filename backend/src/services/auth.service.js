@@ -131,10 +131,10 @@ export const loginStudent = async ({ phone, password, tenantSlug, identifier }) 
     throw new Error('Study hall not found');
   }
 
-  // Find student by phone + tenant (include auth_email for fast login)
+  // Find student by phone + tenant
   const { data: student } = await supabaseAdmin
     .from('students')
-    .select('id, user_id, full_name, phone, email, status, student_code, auth_email')
+    .select('id, user_id, full_name, phone, email, status, student_code')
     .eq('tenant_id', tenant.id)
     .eq('phone', phone)
     .single();
@@ -144,10 +144,11 @@ export const loginStudent = async ({ phone, password, tenantSlug, identifier }) 
     throw new Error('Invalid phone number or password');
   }
 
-  // Derive auth email: use stored auth_email, then email, then phone-based fallback
-  let authEmail = student.auth_email || student.email;
-  if (!authEmail) {
-    // Reconstruct the email used during registration
+  // Derive auth email: use stored email if it looks like a real email,
+  // otherwise reconstruct the phone-based email used during registration
+  let authEmail = student.email;
+  if (!authEmail || authEmail.includes('.studyhub.local') === false) {
+    // Try the self-registration pattern: phone@tenantSlug.studyhub.local
     authEmail = `${phone.replace(/\D/g, '')}@${tenantSlug}.studyhub.local`;
   }
 
