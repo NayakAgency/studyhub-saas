@@ -131,10 +131,10 @@ export const loginStudent = async ({ phone, password, tenantSlug, identifier }) 
     throw new Error('Study hall not found');
   }
 
-  // Find student by phone + tenant
+  // Find student by phone + tenant (include auth_email for fast login)
   const { data: student } = await supabaseAdmin
     .from('students')
-    .select('*, auth.users!user_id(email)')
+    .select('id, user_id, full_name, phone, email, status, student_code, auth_email')
     .eq('tenant_id', tenant.id)
     .eq('phone', phone)
     .single();
@@ -144,15 +144,16 @@ export const loginStudent = async ({ phone, password, tenantSlug, identifier }) 
     throw new Error('Invalid phone number or password');
   }
 
-  // Get auth user email to sign in
-  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(student.user_id);
-  if (!authUser?.user?.email) {
-    throw new Error('Account configuration error');
+  // Derive auth email: use stored auth_email, then email, then phone-based fallback
+  let authEmail = student.auth_email || student.email;
+  if (!authEmail) {
+    // Reconstruct the email used during registration
+    authEmail = `${phone.replace(/\D/g, '')}@${tenantSlug}.studyhub.local`;
   }
 
   // Sign in with Supabase
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email: authUser.user.email,
+    email: authEmail,
     password,
   });
 
