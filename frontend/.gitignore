@@ -1,2 +1,4 @@
-.vercel
+# Local env files only (have real secrets)
 .env*.local
+.env.local
+# .vercel folder is intentionally kept — contains project linkage, no secrets

@@ -1,196 +1,236 @@
-# StudyHub SaaS Platform
+# StudyHub SaaS — Study Hall Management Platform
 
-A comprehensive multi-tenant study hall management system built with React, Node.js, and Supabase.
-
-## Features
-
-### For Study Hall Owners
-- **Multi-tenant architecture** - Each hall gets their own isolated space
-- **Complete seat management** - Track availability, bookings, and assignments
-- **Student management** - Registration, profiles, membership tracking
-- **Payment processing** - Cash, UPI, bank transfers with receipt generation
-- **Analytics & reports** - Revenue, occupancy, student behavior insights
-- **Automated reminders** - Fee reminders, renewal notifications
-- **Complaint management** - Track and resolve student issues
-- **Custom branding** - Hall-specific themes and branding
-
-### For Students
-- **Online registration** - Self-service account creation
-- **Seat booking** - Request preferred seats with payment
-- **Payment tracking** - View payment history and due amounts
-- **Complaint system** - Submit and track issues
-- **Announcements** - Stay updated with hall notifications
-- **Mobile responsive** - Works perfectly on all devices
-
-### For Platform Administrators
-- **Super admin dashboard** - Manage all halls from one place
-- **Tenant onboarding** - Easy hall setup and configuration
-- **System monitoring** - Performance metrics and health checks
-- **Billing management** - Track platform revenue and subscriptions
-
-## Technology Stack
-
-- **Frontend**: React 18 + Vite + Tailwind CSS
-- **Backend**: Node.js + Express + PostgreSQL
-- **Database**: Supabase (PostgreSQL with real-time features)
-- **Authentication**: Supabase Auth with custom JWT handling
-- **File Storage**: Supabase Storage
-- **Deployment**: Vercel (Frontend) + Railway (Backend)
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- Supabase account
-- Git
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/hd8d9eojehd-dot/studyhub-saas.git
-cd studyhub-saas
-```
-
-2. **Setup Database**
-   - Create a Supabase project
-   - Run the SQL scripts in `supabase/COMPLETE_SETUP.sql`
-   - Run additional migrations from `backend/migrations/` in order
-
-3. **Configure Backend**
-```bash
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with your Supabase credentials
-```
-
-4. **Configure Frontend**
-```bash
-cd frontend
-npm install
-cp .env.example .env
-# Edit .env with your API endpoints
-```
-
-5. **Start Development**
-```bash
-# Backend (Terminal 1)
-cd backend
-npm run dev
-
-# Frontend (Terminal 2)  
-cd frontend
-npm run dev
-```
-
-### Seed Super Admin
-```bash
-cd backend
-node scripts/seed-super-admin.js
-```
-
-Default super admin credentials:
-- Email: `admin@studyhub.app`
-- Password: `StudyHub@Admin123`
-
-**⚠️ Change the password after first login!**
-
-## Deployment
-
-See `DEPLOY.md` for detailed deployment instructions to:
-- **Frontend**: Vercel
-- **Backend**: Railway
-- **Database**: Supabase (already configured)
-
-## Architecture
-
-### Multi-tenant Design
-- Each study hall is a separate tenant with isolated data
-- URL structure: `yourdomain.com/hall-slug`
-- Shared infrastructure, isolated data
-
-### Database Schema
-- 34 tables with comprehensive relationships
-- Row Level Security (RLS) for data isolation
-- Automated triggers for business logic
-- Full audit logging
-
-### API Design
-- RESTful APIs with consistent response formats
-- JWT-based authentication
-- Role-based access control (Super Admin, Hall Admin, Student)
-- Comprehensive error handling
-
-## Security Features
-
-- **Row Level Security**: Database-level tenant isolation
-- **JWT Authentication**: Secure token-based auth
-- **Rate Limiting**: Protection against API abuse
-- **Input Validation**: Comprehensive request validation
-- **Audit Logging**: Complete action tracking
-- **File Upload Security**: Secure file handling
-- **Environment Isolation**: Separate configs per environment
-
-## Performance Optimizations
-
-- **Database Indexing**: Optimized queries for large datasets
-- **Caching Layer**: Redis caching for frequent data
-- **Connection Pooling**: Efficient database connections
-- **Code Splitting**: Lazy-loaded frontend components
-- **Image Optimization**: Compressed and resized images
-- **Bundle Analysis**: Optimized JavaScript bundles
-
-## API Documentation
-
-### Authentication Endpoints
-- `POST /api/auth/login` - Login (all roles)
-- `POST /api/auth/refresh` - Refresh JWT token
-- `POST /api/auth/logout` - Logout
-
-### Super Admin APIs
-- `GET /api/super-admin/dashboard` - Platform statistics
-- `POST /api/super-admin/tenants` - Create new hall
-- `GET /api/super-admin/tenants` - List all halls
-
-### Hall Admin APIs
-- `GET /api/admin/dashboard` - Hall dashboard
-- `POST /api/admin/students` - Add student
-- `GET /api/admin/students` - List students
-- `POST /api/admin/payments` - Record payment
-
-### Student APIs
-- `GET /api/student/profile` - Student profile
-- `POST /api/student/complaints` - Submit complaint
-- `GET /api/student/payments` - Payment history
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For support, email support@studyhub.app or open an issue on GitHub.
-
-## Roadmap
-
-- [ ] Mobile app (React Native)
-- [ ] WhatsApp integration for notifications
-- [ ] Advanced analytics with ML insights
-- [ ] Integration with payment gateways (Razorpay, Stripe)
-- [ ] Multi-language support
-- [ ] Advanced reporting and exports
-- [ ] Student attendance tracking
-- [ ] Biometric integration
+**Multi-tenant SaaS platform for study hall owners.**  
+Built with React 18 + Vite (frontend), Node.js 20 + Express (backend), PostgreSQL via Supabase (database).
 
 ---
 
-Built with ❤️ by NayakWorks
+## 🌐 Live Production URLs
+
+### Portals
+
+| Portal | URL |
+|--------|-----|
+| 🏠 **Marketing / Home** | https://studyhub-app.vercel.app |
+| 🔑 **Unified Login** | https://studyhub-app.vercel.app/login |
+| 👑 **Super Admin Login** | https://studyhub-app.vercel.app/super-admin/login |
+| 🏛️ **Hall Admin Login** | https://studyhub-app.vercel.app/admin/login |
+| 🎓 **Student Login** | https://studyhub-app.vercel.app/{hall-slug}/login |
+| 📝 **Student Register** | https://studyhub-app.vercel.app/{hall-slug}/register |
+| 📋 **Hall Public Website** | https://studyhub-app.vercel.app/{hall-slug} |
+
+### API & Infrastructure
+
+| Service | URL |
+|---------|-----|
+| ⚡ **Backend API** | https://studyhub-api-delta.vercel.app |
+| 🩺 **Health Check** | https://studyhub-api-delta.vercel.app/health |
+| 🗄️ **Supabase Dashboard** | https://supabase.com/dashboard/project/yzryikhmjbvzhrxlnjwx |
+| 🗄️ **Supabase SQL Editor** | https://supabase.com/dashboard/project/yzryikhmjbvzhrxlnjwx/sql/new |
+
+### Vercel Projects
+
+| Project | Dashboard |
+|---------|-----------|
+| Frontend (`studyhub-app`) | https://vercel.com/team_EzhQpcOy4ZmY01mbO9UE7SHu/studyhub-app |
+| Backend (`studyhub-api`) | https://vercel.com/team_EzhQpcOy4ZmY01mbO9UE7SHu/studyhub-api |
+
+---
+
+## 🔐 Default Super Admin Credentials
+
+```
+URL:      https://studyhub-app.vercel.app/super-admin/login
+Email:    admin@studyhub.app
+Password: StudyHub@Admin123
+```
+
+> **Change the password immediately after first login.**
+
+---
+
+## 🗄️ Database Setup (Run Once in Supabase)
+
+1. Open → https://supabase.com/dashboard/project/yzryikhmjbvzhrxlnjwx/sql/new
+2. Paste the **entire contents** of `supabase/STUDYHUB_COMPLETE_FINAL.sql`
+3. Click **Run** — takes ~5 seconds
+4. Verify the final row shows: `StudyHub v2.0 FINAL — setup complete!`
+
+That single file contains everything:
+- 34 tables with constraints
+- All triggers & functions
+- 80+ performance indexes
+- 5 materialized views
+- Full RLS policies (60+)
+- Storage buckets
+- Platform settings defaults
+
+---
+
+## 🚀 GitHub Secrets Required (for CI/CD)
+
+Go to **GitHub → Repository → Settings → Secrets and variables → Actions** and add:
+
+| Secret | Value |
+|--------|-------|
+| `VERCEL_TOKEN` | Your Vercel account token |
+| `VERCEL_ORG_ID` | `team_EzhQpcOy4ZmY01mbO9UE7SHu` |
+| `VERCEL_PROJECT_ID_FRONTEND` | `prj_8EUYLQVn9whPJtCd8u3upVHg4rum` |
+| `VERCEL_PROJECT_ID_BACKEND` | `prj_7XZ1Fq2ot3FmWLRivg26XAqOnEc8` |
+| `VITE_API_URL` | `https://studyhub-api-delta.vercel.app/api` |
+| `VITE_WS_URL` | *(leave blank for Vercel serverless)* |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   studyhub-app.vercel.app                │
+│              React 18 + Vite + Tailwind CSS              │
+│     (SPA — all routes served via index.html rewrite)     │
+└────────────────────────┬────────────────────────────────┘
+                         │ HTTPS /api/*
+┌────────────────────────▼────────────────────────────────┐
+│             studyhub-api-delta.vercel.app                │
+│           Node.js 20 + Express (serverless fn)           │
+│      JWT auth · Rate limiting · CORS · Helmet            │
+└────────────────────────┬────────────────────────────────┘
+                         │ Supabase JS SDK
+┌────────────────────────▼────────────────────────────────┐
+│        yzryikhmjbvzhrxlnjwx.supabase.co                 │
+│    PostgreSQL · RLS · Storage · Auth · Realtime          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📁 Project Structure
+
+```
+/
+├── frontend/               React + Vite app
+│   ├── src/
+│   │   ├── pages/          Route-level page components
+│   │   │   ├── admin/      Hall admin portal
+│   │   │   ├── student/    Student portal
+│   │   │   ├── super-admin/ Platform owner portal
+│   │   │   ├── hall/       Public hall website
+│   │   │   └── marketing/  Landing page
+│   │   ├── components/     Shared UI components
+│   │   ├── store/          Zustand state stores
+│   │   └── lib/            API client, utilities
+│   ├── vercel.json         SPA rewrite + cache headers
+│   └── vite.config.js      Build config + code splitting
+│
+├── backend/                Express API server
+│   ├── src/
+│   │   ├── routes/         API route handlers
+│   │   │   ├── admin/      Hall admin endpoints
+│   │   │   ├── student/    Student endpoints
+│   │   │   ├── super-admin/ Platform endpoints
+│   │   │   ├── mobile/     Mobile app endpoints
+│   │   │   └── public/     No-auth public endpoints
+│   │   ├── middleware/     Auth, audit, upload, CORS
+│   │   ├── jobs/           Cron jobs (reminders, cleanup)
+│   │   └── config/         Supabase + env config
+│   ├── api/index.js        Vercel serverless entry point
+│   └── vercel.json         60s function timeout config
+│
+├── supabase/
+│   └── STUDYHUB_COMPLETE_FINAL.sql   ← USE THIS (single file, run once)
+│
+└── .github/workflows/ci-cd.yml       Auto-deploy on push to main
+```
+
+---
+
+## 🧑‍💻 Local Development
+
+```bash
+# 1. Install all dependencies
+npm run install:all
+
+# 2. Copy and fill env files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+
+# 3. Start backend (port 3001)
+npm run dev:backend
+
+# 4. Start frontend (port 9000) — separate terminal
+npm run dev:frontend
+```
+
+Vite automatically proxies `/api/*` → `localhost:3001`.
+
+---
+
+## 👥 User Roles & Access
+
+| Role | Login URL | Default Credentials |
+|------|-----------|---------------------|
+| **Super Admin** | `/super-admin/login` | admin@studyhub.app / StudyHub@Admin123 |
+| **Hall Admin** | `/admin/login` | Created via Super Admin |
+| **Student** | `/{slug}/login` | Self-registered or created by admin |
+
+### Student Portal Pages (`/{slug}/...`)
+
+| Page | Path |
+|------|------|
+| Dashboard | `/{slug}/dashboard` |
+| Profile | `/{slug}/profile` |
+| My Seat | `/{slug}/seat` |
+| Membership | `/{slug}/membership` |
+| Fees | `/{slug}/fees` |
+| Book Seat | `/{slug}/book-seat` |
+| Complaints | `/{slug}/complaints` |
+| Suggestions | `/{slug}/suggestions` |
+| Notifications | `/{slug}/notifications` |
+| ID Card | `/{slug}/id-card` |
+| Resources | `/{slug}/resources` |
+
+### Hall Public Website (`/{slug}/...`)
+
+| Page | Path |
+|------|------|
+| Home | `/{slug}` |
+| About | `/{slug}/about` |
+| Facilities | `/{slug}/facilities` |
+| Plans | `/{slug}/plans` |
+| Seats | `/{slug}/seats` |
+| Gallery | `/{slug}/gallery` |
+| Contact | `/{slug}/contact` |
+| FAQs | `/{slug}/faqs` |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, Vite, Tailwind CSS, Zustand, TanStack Query |
+| Backend | Node.js 20, Express 5, JWT, Multer, Helmet |
+| Database | PostgreSQL (Supabase), Row Level Security |
+| Storage | Supabase Storage |
+| Auth | Supabase Auth + Custom JWT |
+| Deployment | Vercel (both frontend + backend) |
+| CI/CD | GitHub Actions |
+
+---
+
+## ✅ Post-Deploy Checklist
+
+- [ ] Run `STUDYHUB_COMPLETE_FINAL.sql` in Supabase SQL Editor
+- [ ] Verify `/health` endpoint returns `{"status":"ok"}`
+- [ ] Login to Super Admin and change password
+- [ ] Create first study hall tenant
+- [ ] Test student registration at `/{slug}/register`
+- [ ] Confirm frontend at `https://studyhub-app.vercel.app` loads
+- [ ] Add GitHub secrets for automated deploys
+- [ ] (Optional) Add Redis URL in Railway for caching
+- [ ] (Optional) Configure Supabase SMTP for email notifications
+
+---
+
+**Built with ❤️ by NayakWorks**

@@ -1,1 +1,4 @@
-.vercel
+# .env has real secrets — never commit
+.env
+.env.local
+# .vercel folder is intentionally kept (project linkage, no secrets)

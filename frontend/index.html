@@ -2,25 +2,61 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="StudyHub — Run Your Study Hall Like a Business. Complete study hall management platform for seat booking, fee management, and student tracking." />
+    <!-- Mobile-first viewport — viewport-fit=cover fills iPhone notch area -->
+    <!-- maximum-scale=5 allows pinch-zoom (WCAG 1.4.4) while preventing auto-zoom on iOS input focus -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+
+    <!-- SEO -->
+    <meta name="description" content="StudyHub — Complete study hall management platform. Seat booking, fee management, student tracking and analytics." />
+    <meta name="keywords" content="study hall, library management, seat booking, fee management, student portal" />
+    <meta name="author" content="NayakWorks" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- PWA / Mobile -->
     <meta name="theme-color" content="#2563EB" />
-    
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="StudyHub" />
+    <meta name="application-name" content="StudyHub" />
+    <meta name="msapplication-TileColor" content="#2563EB" />
+    <meta name="format-detection" content="telephone=no" />
+
     <!-- Open Graph -->
     <meta property="og:title" content="StudyHub — Study Hall Management Platform" />
     <meta property="og:description" content="The complete SaaS platform for study hall owners. Manage seats, students, fees, and more." />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:url" content="https://studyhub-saas.vercel.app" />
+    <meta property="og:site_name" content="StudyHub" />
 
-    <!-- Fonts -->
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StudyHub — Study Hall Management" />
+    <meta name="twitter:description" content="Complete SaaS for study hall owners. Seats, fees, students — all in one place." />
+
+    <!-- Color scheme — light only for now (dark mode TBD) -->
+    <meta name="color-scheme" content="light" />
+
+    <!-- Disable phone number detection on iOS -->
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Preconnect for Google Fonts — reduces DNS + TLS negotiation time -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Load Inter (body) and Sora (display) with font-display:swap to avoid FOUT -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
 
     <title>StudyHub — Study Hall Management Platform</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
     <div id="root"></div>

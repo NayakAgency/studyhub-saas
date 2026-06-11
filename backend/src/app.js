@@ -95,6 +95,8 @@ app.use(cors({
     if (allowed.includes(origin) || env.isDev) return callback(null, true);
     // Allow all vercel.app subdomains during deployment
     if (origin.endsWith('.vercel.app')) return callback(null, true);
+    // Allow Railway preview URLs
+    if (origin.endsWith('.railway.app') || origin.endsWith('.up.railway.app')) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,

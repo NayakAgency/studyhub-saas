@@ -1,23 +1,27 @@
-# Dependencies
+# ── Dependencies ─────────────────────────────────────────────
 node_modules/
 .pnp
 .pnp.js
 
-# Environment variables — NEVER commit these
+# ── Environment variables — NEVER commit secret .env files ───
+# Local dev envs (have real secrets)
 .env
 .env.local
 .env.development
-.env.production
 .env*.local
 backend/.env
 frontend/.env
 
-# Build outputs
+# .env.production files contain build-time public vars (VITE_*)
+# and are SAFE to commit — no secrets inside them
+# DO NOT add .env.production here
+
+# ── Build outputs ─────────────────────────────────────────────
 dist/
 build/
 *.tsbuildinfo
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────
 logs/
 *.log
 npm-debug.log*
@@ -25,28 +29,27 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Editor
-.vscode/
+# ── Editor ────────────────────────────────────────────────────
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# ── OS ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Testing artifacts
+# ── Testing artifacts ─────────────────────────────────────────
 coverage/
 .nyc_output/
 *.pem
 .cache/
 
-# Supabase local
+# ── Supabase local ────────────────────────────────────────────
 .branches/
 .temp/
 
-# Dev test token files
+# ── Dev test token files ──────────────────────────────────────
 .admin_token
 .sa_token
 .sid
@@ -56,4 +59,7 @@ coverage/
 .test_section_id
 .test_tenant_id
 .test_token
-.vercel
+
+# NOTE: .vercel folder is intentionally NOT ignored
+# It contains project.json (project ID linkage) needed by Vercel CLI
+# and GitHub Actions — it has NO secrets.

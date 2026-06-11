@@ -1,62 +1,55 @@
 # StudyHub — Deployment Guide
 
 ## Stack
-- **Frontend**: Vercel (React + Vite)
-- **Backend**: Railway (Node.js 20 + Express)
-- **Database**: Supabase (PostgreSQL, already configured)
+
+| Layer    | Platform |
+|----------|---------|
+| Frontend | Vercel (React + Vite) |
+| Backend  | Railway (Node.js 20 + Express) |
+| Database | Supabase (PostgreSQL) |
+| CI/CD    | GitHub Actions |
 
 ---
 
-## Step 1 — Set Up Database
+## Step 1 — Set Up Database (Supabase)
 
-Your Supabase project is already connected. Run the full schema setup:
+1. Open your Supabase project → **SQL Editor**
+2. Paste and run **`supabase/COMPLETE_SETUP.sql`** — creates all 34 tables, RLS policies, indexes, functions, storage buckets
+3. Run **`supabase/015_performance_indexes.sql`** — adds composite indexes and materialized views
+4. Run **`supabase/016_final_optimizations.sql`** — final index tweaks, unified view refresher
 
-1. Go to Supabase Dashboard → SQL Editor
-2. Paste and run `supabase/STUDYHUB_SETUP.sql` (full one-shot setup)
-3. Then run remaining backend migrations **in order** from `backend/migrations/`:
-   - `002_payment_system.sql`
-   - `003_performance_optimization.sql`
-   - `004_analytics_ml.sql`
-   - `005_push_notifications.sql`
-   - `006_maintenance_functions.sql`
-   - `007_analytics_views.sql`
-   - `008_platform_settings_inquiries.sql`
-   - `009_hall_faqs_seat_changes.sql`
-   - `010_maintenance_activity_fixes.sql`
-   - `011_hall_settings_overdue_columns.sql`
-   - `012_comprehensive_fixes.sql`
-   - `013_schema_consistency_fixes.sql`
-   - `014_payment_stats_functions.sql`
+That's it — no need to run individual backend migrations separately.
 
 ---
 
 ## Step 2 — Seed Super Admin
 
-Run locally (with backend .env set):
 ```bash
 cd backend
+cp .env.example .env        # fill in your values first
 node scripts/seed-super-admin.js
 ```
+
 Default credentials:
 - Email: `admin@studyhub.app`
 - Password: `StudyHub@Admin123`
 
-**Change password after first login!**
+**Change the password immediately after first login.**
 
 ---
 
 ## Step 3 — Deploy Backend to Railway
 
 1. Push code to GitHub
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
+2. Go to [railway.app](https://railway.app) → **New Project → Deploy from GitHub**
 3. Select the repo, set **Root Directory** to `backend`
-4. Set environment variables in Railway dashboard:
+4. Add environment variables:
 
 ```
-SUPABASE_URL=https://yzryikhmjbvzhrxlnjwx.supabase.co
-SUPABASE_ANON_KEY=<your-anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-JWT_SECRET=<generate-new-32+-char-secret>
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=<anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+JWT_SECRET=<min-32-char-random-string>
 JWT_EXPIRES_IN=1h
 JWT_REFRESH_EXPIRES_IN=7d
 NODE_ENV=production
@@ -67,72 +60,66 @@ ALLOWED_ORIGINS=https://your-frontend.vercel.app
 REDIS_URL=
 ```
 
-5. Railway will auto-detect `railway.config.json` and start with `node src/server.js`
-6. Note your Railway backend URL (e.g., `https://studyhub-backend.up.railway.app`)
+5. Railway auto-detects `railway.config.json` and starts `node src/server.js`
+6. Note your Railway URL, e.g. `https://studyhub-backend.up.railway.app`
 
 ---
 
 ## Step 4 — Deploy Frontend to Vercel
 
-1. Go to [vercel.com](https://vercel.com) → New Project → Import from GitHub
+### Option A — Vercel Dashboard (manual)
+
+1. Go to [vercel.com](https://vercel.com) → **New Project → Import from GitHub**
 2. Set **Root Directory** to `frontend`
-3. Set environment variables in Vercel:
+3. Add environment variables:
 
 ```
-VITE_API_URL=https://studyhub-backend.up.railway.app/api
+VITE_API_URL=https://studyhub-backend.up.railway.app
 VITE_WS_URL=wss://studyhub-backend.up.railway.app
 ```
 
-4. Deploy — Vercel auto-runs `npm run build`
-5. The `vercel.json` handles SPA routing automatically
+4. Click **Deploy** — Vercel runs `npm run build` automatically
+
+### Option B — GitHub Actions (automated, recommended)
+
+Add these secrets in **GitHub → Settings → Secrets → Actions**:
+
+| Secret | Value |
+|--------|-------|
+| `VERCEL_TOKEN` | Vercel account token |
+| `RAILWAY_TOKEN` | Railway project token |
+| `VITE_API_URL` | `https://your-backend.up.railway.app` |
+| `VITE_WS_URL` | `wss://your-backend.up.railway.app` |
+
+Every push to `main` will automatically:
+- Lint and build the frontend
+- Deploy frontend to Vercel
+- Deploy backend to Railway
 
 ---
 
-## Step 5 — Update Backend ALLOWED_ORIGINS
+## Step 5 — Update CORS After Deploy
 
-Once Vercel gives you the production URL, update Railway env:
+Once Vercel assigns a production URL, update Railway env:
+
 ```
-ALLOWED_ORIGINS=https://studyhub.vercel.app
-APP_URL=https://studyhub.vercel.app
+ALLOWED_ORIGINS=https://your-app.vercel.app
+APP_URL=https://your-app.vercel.app
 ```
 
-Redeploy backend on Railway (or it auto-restarts on env change).
+Railway restarts automatically on env changes.
 
 ---
 
-## Step 6 — Verify Deployment
+## Step 6 — Verify
 
-- [ ] `/health` endpoint returns `{ status: 'ok' }`
+- [ ] `GET /health` → `{ "status": "ok" }`
 - [ ] Super Admin login at `/super-admin/login`
-- [ ] Create a test tenant via Super Admin
+- [ ] Create a test tenant via Super Admin → Tenants → Add Hall
 - [ ] Login as hall admin at `/admin/login`
-- [ ] Run setup wizard to configure hall
-- [ ] Register a test student
-- [ ] Verify student portal at `/:slug`
-
----
-
-## Optional: Email (Resend)
-
-For real transactional emails (receipts, reminders):
-1. Sign up at [resend.com](https://resend.com) (free: 3k emails/month)
-2. Add to Railway env:
-```
-RESEND_API_KEY=re_xxxxxxxxxxxx
-FROM_EMAIL=noreply@yourdomain.com
-FROM_NAME=StudyHub
-```
-
-Without this, emails are silently skipped — in-app notifications still work.
-
----
-
-## Optional: Redis Cache
-
-For better performance with many tenants:
-1. Add Redis service in Railway (or use Upstash)
-2. Set `REDIS_URL=rediss://user:pass@host:port` in Railway env
-3. Falls back to in-memory cache if not set (fine for low traffic)
+- [ ] Complete Setup Wizard (sections, seats, plans)
+- [ ] Register a test student at `/:slug/register`
+- [ ] Verify student portal at `/:slug/dashboard`
 
 ---
 
@@ -143,31 +130,52 @@ For better performance with many tenants:
 | Platform Owner (Super Admin) | `/super-admin/login` |
 | Study Hall Admin | `/admin/login` |
 | Student | `/:hall-slug/login` |
-| Student Self-Registration | `/:hall-slug/register` |
+| Self-registration | `/:hall-slug/register` |
 | Hall Public Website | `/:hall-slug` |
-| Marketing Site | `/` |
+| Marketing | `/` |
 
 ---
 
-## Production JWT Secret
+## Local Development
 
-Generate a strong secret:
+```bash
+# Install all
+npm run install:all
+
+# Backend (port 3001)
+cd backend && npm run dev
+
+# Frontend (port 9000) — separate terminal
+cd frontend && npm run dev
+```
+
+Vite proxies `/api/*` to `localhost:3001` automatically.
+
+---
+
+## Generate JWT Secret
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
 ---
 
-## Quick Start (Local Dev)
+## Optional: Redis Cache
 
-```bash
-# Backend
-cd backend
-npm install
-npm run dev   # runs on :3001
+Improves response times under heavy load. Without it, the backend uses an in-memory cache.
 
-# Frontend (separate terminal)
-cd frontend
-npm install
-npm run dev   # runs on :9000, proxies /api → :3001
+1. Add a Redis service in Railway (or use Upstash free tier)
+2. Set `REDIS_URL=rediss://user:pass@host:port` in Railway
+
+---
+
+## Database Migration Run Order
+
 ```
+supabase/COMPLETE_SETUP.sql         ← Run first (full schema)
+supabase/015_performance_indexes.sql ← Run second
+supabase/016_final_optimizations.sql ← Run third
+```
+
+All scripts are idempotent — safe to re-run.
