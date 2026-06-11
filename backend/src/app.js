@@ -56,11 +56,14 @@ import mobileRoutes from './routes/mobile/index.js';
 import publicHallRoutes from './routes/public/hall.js';
 
 // ── Super Admin ───────────────────────────────────────────────
-import superAdminTenantsRoutes       from './routes/super-admin/tenants.js';
-import superAdminAnalyticsRoutes     from './routes/super-admin/analytics.js';
-import superAdminBillingRoutes       from './routes/super-admin/billing.js';
+import superAdminTenantsRoutes          from './routes/super-admin/tenants.js';
+import superAdminAnalyticsRoutes        from './routes/super-admin/analytics.js';
+import superAdminBillingRoutes          from './routes/super-admin/billing.js';
 import superAdminPlatformSettingsRoutes from './routes/super-admin/platform-settings.js';
-import superAdminSaasPlansRoutes     from './routes/super-admin/saas-plans.js';
+import superAdminSaasPlansRoutes        from './routes/super-admin/saas-plans.js';
+import superAdminInquiriesRoutes        from './routes/super-admin/inquiries.js';
+import superAdminAnnouncementsRoutes    from './routes/super-admin/announcements.js';
+import superAdminSupportRoutes          from './routes/super-admin/support.js';
 
 // ─────────────────────────────────────────────────────────────
 
@@ -202,8 +205,11 @@ app.use('/api/mobile', mobileRoutes);
 app.use('/api/super-admin/tenants',           superAdminTenantsRoutes);
 app.use('/api/super-admin/platform-settings', superAdminPlatformSettingsRoutes);
 app.use('/api/super-admin/saas-plans',        superAdminSaasPlansRoutes);
+app.use('/api/super-admin/inquiries',         superAdminInquiriesRoutes);
+app.use('/api/super-admin/announcements',     superAdminAnnouncementsRoutes);
+app.use('/api/super-admin/support',           superAdminSupportRoutes);
+app.use('/api/super-admin/billing',           superAdminBillingRoutes);
 app.use('/api/super-admin',                   superAdminAnalyticsRoutes);
-app.use('/api/super-admin',                   superAdminBillingRoutes);
 
 // ── 404 ────────────────────────────────────────────────────────
 app.use((_req, res) => {
