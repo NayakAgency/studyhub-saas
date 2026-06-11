@@ -152,44 +152,6 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// ── Debug student login (temp — production troubleshooting) ───
-app.post('/debug/student-login', async (req, res) => {
-  const { phone, password, tenantSlug } = req.body || {};
-  const steps = [];
-  try {
-    const { supabase: sb, supabaseAdmin: sba } = await import('./config/supabase.js');
-    
-    steps.push('supabase imported');
-    
-    // Find tenant
-    const { data: tenant, error: tenantErr } = await sba.from('tenants').select('id,hall_name,status').eq('slug', tenantSlug).single();
-    steps.push(`tenant: ${tenant?.id ? 'found' : 'not found'} error: ${tenantErr?.message || 'none'}`);
-    
-    if (!tenant) return res.json({ steps, error: 'Tenant not found' });
-    
-    // Find student
-    const { data: student, error: stuErr } = await sba.from('students').select('id,user_id,phone,full_name,status,email').eq('tenant_id', tenant.id).eq('phone', phone).single();
-    steps.push(`student: ${student?.id ? student.full_name : 'not found'} error: ${stuErr?.message || 'none'}`);
-    
-    if (!student) return res.json({ steps, error: 'Student not found' });
-    
-    // Derive auth email — same logic as auth.service.js
-    let authEmail = student.email;
-    if (!authEmail || !authEmail.includes('.studyhub.local')) {
-      authEmail = `${phone.replace(/\D/g, '')}@${tenantSlug}.studyhub.local`;
-    }
-    steps.push(`authEmail: ${authEmail}`);
-    
-    // Sign in
-    const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email: authEmail, password });
-    steps.push(`signIn: ${authError ? 'FAILED: ' + authError.message : 'OK uid=' + authData?.user?.id}`);
-    
-    return res.json({ steps, ok: !authError });
-  } catch (e) {
-    return res.json({ steps, error: e.message });
-  }
-});
-
 // ─────────────────────────────────────────────────────────────
 // Routes
 // ─────────────────────────────────────────────────────────────
