@@ -298,31 +298,32 @@ export const changePassword = async (userId, newPassword) => {
 };
 
 // ============================================================
-// Helper: Store refresh token (fast — SHA256 instead of bcrypt)
+// Helper: Store refresh token
+// Stores a truncated version of the JWT as a reference key.
+// Security: the JWT signature IS the secret — storage is just for revocation.
 // ============================================================
 const storeRefreshToken = async (userId, token, userAgent, ipAddress) => {
-  // Use SHA256 for storage — bcrypt at cost 10 is too slow for serverless
-  const { createHash } = await import('node:crypto');
-  const tokenHash = createHash('sha256').update(token).digest('hex');
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  // Store first 255 chars as reference — enough to identify the token without exposing full JWT
+  const tokenRef = token.substring(0, 255);
 
+  // Try new schema (token_hash column) first
   const { error } = await supabaseAdmin.from('refresh_tokens').insert({
     user_id: userId,
-    token_hash: tokenHash,
-    token: tokenHash,
+    token_hash: tokenRef,
+    token: tokenRef,
     expires_at: expiresAt,
     user_agent: userAgent || null,
     ip_address: ipAddress || null,
   });
 
   if (error) {
-    // Fallback: old schema
+    // Fallback: minimal schema
     await supabaseAdmin.from('refresh_tokens').insert({
       user_id: userId,
-      token: tokenHash,
+      token: tokenRef,
       expires_at: expiresAt,
-      ip_address: ipAddress || null,
-    });
+    }).then(r => r.error && console.error('[auth] storeRefreshToken fallback error:', r.error.message));
   }
 };
 

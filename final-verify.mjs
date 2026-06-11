@@ -449,14 +449,14 @@ if (CMP_ID) {
 
 // ── 26. TOKEN REFRESH & LOGOUT ────────────────────────────────
 S('26. TOKEN REFRESH & LOGOUT');
-// POST /auth/refresh → { accessToken:'...', refreshToken:'...' }
-// Use HA token refresh first (already proven to work in previous tests)
-const haRef = await POST('/auth/refresh', {refreshToken:haR.data.refreshToken});
-ok('HA token refresh', haRef.ok, `token=${haRef.data.accessToken?'issued':'missing'}`);
-// SA refresh — use a completely fresh login to avoid any consumed token issues
-const saFresh = await POST('/auth/login-admin', {email:'admin@studyhub.app', password:'StudyHub@Admin123'});
-const saRef   = await POST('/auth/refresh', {refreshToken:saFresh.data.refreshToken});
-ok('SA token refresh', saRef.ok, `token=${saRef.data.accessToken?'issued':'missing'}`);
+// Use fresh logins for refresh tests — previous tokens may have been rotated
+const haFresh2  = await POST('/auth/login-admin', {email:'rdgfb@gmail.com', password:'Admin@123456'});
+const haRefRes  = await POST('/auth/refresh', {refreshToken:haFresh2.data.refreshToken});
+ok('HA token refresh', haRefRes.ok, `token=${haRefRes.data.accessToken?'issued':'missing'}`);
+
+const saFresh   = await POST('/auth/login-admin', {email:'admin@studyhub.app', password:'StudyHub@Admin123'});
+const saRefRes  = await POST('/auth/refresh', {refreshToken:saFresh.data.refreshToken});
+ok('SA token refresh', saRefRes.ok, `token=${saRefRes.data.accessToken?'issued':'missing'}`);
 const haRef = await POST('/auth/refresh', {refreshToken:haR.data.refreshToken});
 ok('HA token refresh', haRef.ok, `token=${haRef.data.accessToken?'issued':'missing'}`);
 if (STUT) {

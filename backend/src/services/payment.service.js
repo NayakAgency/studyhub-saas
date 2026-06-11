@@ -97,8 +97,8 @@ export const recordAdminPayment = async ({
     });
   }
 
-  // Notify student
-  await createNotification({
+  // Notify student (fire-and-forget — don't block the response)
+  createNotification({
     tenantId,
     studentId,
     type:  NOTIFICATION_TYPES.PAYMENT_SUCCESS,
@@ -106,7 +106,7 @@ export const recordAdminPayment = async ({
     body:  `Your payment of ₹${amount} has been recorded successfully.`,
     referenceId:   payment.id,
     referenceType: 'payment',
-  });
+  }).catch(e => console.error('[payment] notification error:', e.message));
 
   // Broadcast live update
   broadcastPaymentUpdate(tenantId, {
