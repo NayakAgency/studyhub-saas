@@ -242,26 +242,26 @@ if (STU_ID && PLAN_ID && SEAT_ID) {
 S('14. HALL ADMIN — PAYMENTS');
 let PAY_ID;
 if (STU_ID) {
-  // POST /admin/payments → returns payment object directly (has .id, .receipt_number, .amount)
-  const pay1 = await POST('/admin/payments', {
+  // POST /admin/payments/record → returns payment object directly (has .id, .receipt_number, .amount)
+  const pay1 = await POST('/admin/payments/record', {
     studentId:STU_ID, amount:1400, paymentMethod:'cash',
     paymentDate:new Date().toISOString().split('T')[0],
-    description:'Monthly fee', membershipId:MEM_ID,
+    notes:'Monthly fee', membershipId:MEM_ID,
   }, HAT);
   ok('Record cash payment', pay1.ok, `receipt=${pay1.data.receipt_number}`);
   PAY_ID = pay1.data.id;
 
   const utr = `UTR${Math.floor(Math.random()*999999999)}`;
-  const pay2 = await POST('/admin/payments', {
+  const pay2 = await POST('/admin/payments/record', {
     studentId:STU_ID, amount:700, paymentMethod:'upi', utrNumber:utr,
     paymentDate:new Date().toISOString().split('T')[0],
-    description:'Partial payment',
+    notes:'Partial payment',
   }, HAT);
   ok('Record UPI payment', pay2.ok, `receipt=${pay2.data.receipt_number} utr=${pay2.data.utr_number}`);
 
   if (PAY_ID) {
-    // PATCH /admin/payments/:id/verify → { success:true, payment:{...} }
-    const ver = await PATCH(`/admin/payments/${PAY_ID}/verify`, {status:'verified'}, HAT);
+    // POST /admin/payments/:id/verify → { success:true, payment:{...} }
+    const ver = await POST(`/admin/payments/${PAY_ID}/verify`, {action:'verify'}, HAT);
     ok('Verify payment', ver.ok, `status=${ver.data.payment?.status}`);
   }
 }
