@@ -226,11 +226,13 @@ let MEM_ID;
 if (STU_ID && PLAN_ID && SEAT_ID) {
   const today = new Date().toISOString().split('T')[0];
   const end30 = new Date(Date.now()+30*86400000).toISOString().split('T')[0];
-  // POST /admin/students/:id/memberships → { membership:{id,end_date,...} }
-  const mem = await POST(`/admin/students/${STU_ID}/memberships`, {
-    planId:PLAN_ID, seatId:SEAT_ID, startDate:today, endDate:end30,
+  // POST /admin/renewals/direct → { success:true, membership:{id,end_date,...} }
+  const mem = await POST('/admin/renewals/direct', {
+    studentId:STU_ID, planId:PLAN_ID, seatId:SEAT_ID,
+    startDate:today, endDate:end30,
+    paymentMethod:'cash', paymentAmount:1400,
   }, HAT);
-  ok('Create membership', mem.ok, `id=${mem.data.membership?.id} end=${mem.data.membership?.end_date}`);
+  ok('Create membership (direct renewal)', mem.ok, `id=${mem.data.membership?.id} end=${mem.data.membership?.end_date}`);
   MEM_ID = mem.data.membership?.id;
 } else {
   ok('Create membership', false, `SKIPPED — STU=${!!STU_ID} PLAN=${!!PLAN_ID} SEAT=${!!SEAT_ID}`);
@@ -447,9 +449,13 @@ if (CMP_ID) {
 
 // ── 26. TOKEN REFRESH & LOGOUT ────────────────────────────────
 S('26. TOKEN REFRESH & LOGOUT');
-// Get a fresh login for refresh test (the original saR token may be consumed)
-const saR2 = await POST('/auth/login-admin', {email:'admin@studyhub.app', password:'StudyHub@Admin123'});
-const saRef = await POST('/auth/refresh', {refreshToken:saR2.data.refreshToken});
+// POST /auth/refresh → { accessToken:'...', refreshToken:'...' }
+// Use HA token refresh first (already proven to work in previous tests)
+const haRef = await POST('/auth/refresh', {refreshToken:haR.data.refreshToken});
+ok('HA token refresh', haRef.ok, `token=${haRef.data.accessToken?'issued':'missing'}`);
+// SA refresh — use a completely fresh login to avoid any consumed token issues
+const saFresh = await POST('/auth/login-admin', {email:'admin@studyhub.app', password:'StudyHub@Admin123'});
+const saRef   = await POST('/auth/refresh', {refreshToken:saFresh.data.refreshToken});
 ok('SA token refresh', saRef.ok, `token=${saRef.data.accessToken?'issued':'missing'}`);
 const haRef = await POST('/auth/refresh', {refreshToken:haR.data.refreshToken});
 ok('HA token refresh', haRef.ok, `token=${haRef.data.accessToken?'issued':'missing'}`);
