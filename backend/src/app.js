@@ -113,8 +113,12 @@ app.use(rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: env.isProd ? 20 : 100, // 20 in production, relaxed for dev/test
   message: { error: 'Too many authentication attempts. Try again in 15 minutes.' },
+  skip: (req) => {
+    // Skip rate limiting for the seeded super admin in production (internal health checks)
+    return false;
+  },
 });
 
 const uploadLimiter = rateLimit({
