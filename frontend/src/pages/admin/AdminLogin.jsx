@@ -24,7 +24,12 @@ export default function AdminLogin() {
 
   const onSubmit = async (data) => {
     try {
-      await loginAdmin(data.email, data.password);
+      const result = await loginAdmin(data.email, data.password);
+      if (result.user.role !== 'hall_admin') {
+        useAuthStore.getState().clearAuth();
+        toast.error('This login is for Hall Admins only');
+        return;
+      }
       navigate(from, { replace: true });
     } catch (err) {
       toast.error(err?.response?.data?.error || err.message || 'Login failed');

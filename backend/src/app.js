@@ -89,11 +89,13 @@ app.use(helmet({
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = env.allowedOrigins;
-    if (!origin || allowed.includes(origin) || env.isDev) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS blocked: ${origin}`));
-    }
+    // Allow requests with no origin (curl, mobile apps, same-origin server calls)
+    if (!origin) return callback(null, true);
+    // Allow if listed in env or in dev mode
+    if (allowed.includes(origin) || env.isDev) return callback(null, true);
+    // Allow all vercel.app subdomains during deployment
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -149,53 +151,53 @@ app.get('/health', (_req, res) => {
 // ─────────────────────────────────────────────────────────────
 // Routes
 // ─────────────────────────────────────────────────────────────
-// Support both /api/... (direct Express server) and /... (Vercel serverless strips /api prefix)
-const BASE = ['', '/api'];
+// Backend is deployed standalone on Vercel (studyhub-api-delta.vercel.app).
+// All frontend calls use absolute URL: https://studyhub-api-delta.vercel.app/api/...
+// Vercel rewrite: /(.*) → /api/index.js
+// Express receives the FULL path including /api prefix.
 
-BASE.forEach(b => {
 // Public (no auth)
-app.use(`${b}/public`, publicHallRoutes);
+app.use('/api/public', publicHallRoutes);
 
 // Auth
-app.use(`${b}/auth`, authLimiter, authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 // ── Admin ──────────────────────────────────────────────────────
-app.use(`${b}/admin/dashboard`,         adminDashboardRoutes);
-app.use(`${b}/admin/students`,          adminStudentsRoutes);
-app.use(`${b}/admin/seats`,             adminSeatsRoutes);
-app.use(`${b}/admin/sections`,          adminSectionsRoutes);
-app.use(`${b}/admin/plans`,             adminPlansRoutes);
-app.use(`${b}/admin/fees`,              adminFeesRoutes);
-app.use(`${b}/admin/payments`,          uploadLimiter, adminPaymentsRoutes);
-app.use(`${b}/admin/bookings`,          adminBookingsRoutes);
-app.use(`${b}/admin/applications`,      adminBookingsRoutes);
-app.use(`${b}/admin/complaints`,        adminComplaintsRoutes);
-app.use(`${b}/admin/announcements`,     adminAnnouncementsRoutes);
-app.use(`${b}/admin/renewals`,          adminRenewalsRoutes);
-app.use(`${b}/admin/settings`,          adminSettingsRoutes);
-app.use(`${b}/admin/reports`,           adminReportsRoutes);
-app.use(`${b}/admin/resources`,         uploadLimiter, adminResourcesRoutes);
-app.use(`${b}/admin/waiting-list`,      adminWaitingListRoutes);
-app.use(`${b}/admin/gallery`,           uploadLimiter, adminGalleryRoutes);
-app.use(`${b}/admin/contact-inquiries`, adminContactRoutes);
-app.use(`${b}/admin/analytics`,         adminAnalyticsRoutes);
-app.use(`${b}/admin/suggestions`,       adminSuggestionsRoutes);
-app.use(`${b}/admin/faqs`,             adminFaqsRoutes);
-app.use(`${b}/admin/seat-changes`,     adminSeatChangesRoutes);
+app.use('/api/admin/dashboard',         adminDashboardRoutes);
+app.use('/api/admin/students',          adminStudentsRoutes);
+app.use('/api/admin/seats',             adminSeatsRoutes);
+app.use('/api/admin/sections',          adminSectionsRoutes);
+app.use('/api/admin/plans',             adminPlansRoutes);
+app.use('/api/admin/fees',              adminFeesRoutes);
+app.use('/api/admin/payments',          uploadLimiter, adminPaymentsRoutes);
+app.use('/api/admin/bookings',          adminBookingsRoutes);
+app.use('/api/admin/applications',      adminBookingsRoutes);
+app.use('/api/admin/complaints',        adminComplaintsRoutes);
+app.use('/api/admin/announcements',     adminAnnouncementsRoutes);
+app.use('/api/admin/renewals',          adminRenewalsRoutes);
+app.use('/api/admin/settings',          adminSettingsRoutes);
+app.use('/api/admin/reports',           adminReportsRoutes);
+app.use('/api/admin/resources',         uploadLimiter, adminResourcesRoutes);
+app.use('/api/admin/waiting-list',      adminWaitingListRoutes);
+app.use('/api/admin/gallery',           uploadLimiter, adminGalleryRoutes);
+app.use('/api/admin/contact-inquiries', adminContactRoutes);
+app.use('/api/admin/analytics',         adminAnalyticsRoutes);
+app.use('/api/admin/suggestions',       adminSuggestionsRoutes);
+app.use('/api/admin/faqs',              adminFaqsRoutes);
+app.use('/api/admin/seat-changes',      adminSeatChangesRoutes);
 
 // ── Student ────────────────────────────────────────────────────
-app.use(`${b}/student`, studentRoutes);
+app.use('/api/student', studentRoutes);
 
 // ── Mobile ─────────────────────────────────────────────────────
-app.use(`${b}/mobile`, mobileRoutes);
+app.use('/api/mobile', mobileRoutes);
 
 // ── Super Admin ────────────────────────────────────────────────
-app.use(`${b}/super-admin/tenants`,           superAdminTenantsRoutes);
-app.use(`${b}/super-admin/platform-settings`, superAdminPlatformSettingsRoutes);
-app.use(`${b}/super-admin/saas-plans`,        superAdminSaasPlansRoutes);
-app.use(`${b}/super-admin`,                   superAdminAnalyticsRoutes);
-app.use(`${b}/super-admin`,                   superAdminBillingRoutes);
-}); // end BASE.forEach
+app.use('/api/super-admin/tenants',           superAdminTenantsRoutes);
+app.use('/api/super-admin/platform-settings', superAdminPlatformSettingsRoutes);
+app.use('/api/super-admin/saas-plans',        superAdminSaasPlansRoutes);
+app.use('/api/super-admin',                   superAdminAnalyticsRoutes);
+app.use('/api/super-admin',                   superAdminBillingRoutes);
 
 // ── 404 ────────────────────────────────────────────────────────
 app.use((_req, res) => {
